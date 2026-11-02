@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiPagoAmigo - Pago de recibos y facturas</title>
+    <style>
+        /* Reset y Estilos Generales */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background-color: #0066b3;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo-container img {
+            height: 45px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            align-items: center;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-left: 20px;
+            align-items: center;
+        }
+
+        .social-icons img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            display: block;
+        }
+
+        /* Banner Principal */
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background-image: url('pago.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Sección de Contenido Principal */
+        .main-content {
+            background-color: #f4f4f4;
+            padding: 40px 8%;
+            min-height: 350px;
+            position: relative;
+        }
+
+        .content-title {
+            color: #0066b3;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .instruction-text {
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Barra de Búsqueda */
+        .search-container {
+            display: flex;
+            max-width: 100%;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .search-btn {
+            background-color: #d32f2f;
+            border: none;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .search-btn svg {
+            fill: white;
+            width: 24px;
+            height: 24px;
+        }
+
+        .input-wrapper {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #ccc;
+            border-left: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            color: #555;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 15px;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            display: none;
+            background: none;
+            border: none;
+        }
+
+        /* Lista Desplegable de Autocompletado */
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 60px;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .autocomplete-list div {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .autocomplete-list div:hover {
+            background-color: #f0f0f0;
+            color: #0066b3;
+        }
+
+        .category-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .category-text a {
+            color: #d32f2f;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Aviso de No Encontrado */
+        .no-result-container {
+            display: none; 
+            margin-top: -10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-left: 4px solid #d32f2f;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .no-result-container p {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .no-result-container a {
+            color: #0066b3;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .extra-input-wrapper {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .extra-input-wrapper input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        /* --- SECCIÓN DE RESULTADOS (TABLA) --- */
+        .results-section {
+            display: none; 
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        .results-header {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .results-header strong {
+            color: #333;
+        }
+
+        .cancel-link {
+            color: #d32f2f;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .results-table thead {
+            background-color: #0066b3;
+            color: white;
+        }
+
+        .results-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        /* Estilo del botón Pagar (Rojo con letras blancas) */
+        .pay-btn {
+            background-color: #d32f2f;
+            color: white;
+            padding: 8px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            display: inline-block;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        .pay-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        .pagination {
+            text-align: right;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .page-btn {
+            background-color: #0066b3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0066b3;
+            color: white;
+            padding: 30px 8% 10px 8%;
+        }
+
+        .footer-main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo img {
+            max-width: 220px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .contact-item img {
+            width: 35px;
+            height: 35px;
+            margin-right: 15px;
+            object-fit: contain;
+        }
+
+        .contact-text h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .contact-text p {
+            font-size: 0.85rem;
+            line-height: 1.3;
+            margin-bottom: 2px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            padding-top: 10px;
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 768px) {
+            .hero-banner { height: 250px; }
+            .nav-links { display: none; }
+            .main-content { padding: 20px 5%; }
+            .footer-main { flex-direction: column; }
+            .footer-col { width: 100%; margin-bottom: 30px; }
+            
+            .results-table thead { display: none; } 
+            .results-table tr { 
+                display: block; 
+                margin-bottom: 15px; 
+                border: 1px solid #ddd; 
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .results-table td { 
+                display: block; 
+                text-align: right; 
+                padding: 10px 15px; 
+                border-bottom: 1px solid #eee;
+                position: relative;
+            }
+            .results-table td:last-child { border-bottom: none; }
+            .results-table td::before { 
+                content: attr(data-label); 
+                float: left; 
+                font-weight: bold; 
+                color: #0066b3;
+            }
+            .results-table td:last-child {
+                text-align: center;
+                padding-top: 15px;
+            }
+            .pay-btn {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <img src="mipagoamigo.png" alt="MiPagoAmigo">
+        </div>
+        <div class="nav-links">
+            <span>¿QUÉ ES MIPAGOAMIGO?</span>
+            <span>PREGUNTAS FRECUENTES</span>
+            <div class="social-icons">
+                <img src="facebook.png" alt="Facebook">
+                <img src="x.png" alt="X">
+                <img src="youtube.png" alt="YouTube">
+            </div>
+            <span>SÍGUENOS</span>
+        </div>
+    </header>
+
+    <!-- Banner Principal -->
+    <section class="hero-banner"></section>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <h2 class="content-title">Pago de recibos y facturas</h2>
+        <p class="instruction-text">Ingrese el nombre de la empresa o comercio a la cual le va a realizar el pago.</p>
+
+        <!-- Barra de Búsqueda -->
+        <div class="search-container" id="searchContainer">
+            <button class="search-btn" id="searchBtn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
+            <div class="input-wrapper">
+                <input type="text" class="search-input" id="searchInput" placeholder="Nombre del convenio" autocomplete="off">
+                <button class="clear-btn" id="clearBtn">&times;</button>
+            </div>
+            <div class="autocomplete-list" id="autocompleteList"></div>
+        </div>
+
+        <!-- Mensaje de No Encontrado -->
+        <div class="no-result-container" id="noResultContainer">
+            <p>No encontraste tu convenio. <a href="#" id="showExtraInput">Ingresa aquí</a></p>
+            <div class="extra-input-wrapper" id="extraInputWrapper">
+                <input type="text" id="manualInput" placeholder="Escribe el nombre de tu convenio aquí">
+            </div>
+        </div>
+
+        <!-- Sección de Resultados -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                Resultado de búsqueda: <strong id="selectedNameText"></strong> <span class="cancel-link" id="cancelSelection">Cancelar</span>
+            </div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Nombre del convenio</th>
+                        <th>Categoría</th>
+                        <th style="text-align: center;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <!-- Fila generada por JS -->
+                </tbody>
+            </table>
+            <div class="pagination">
+                Página 1 de 1 <button class="page-btn">1</button>
+            </div>
+        </div>
+
+        <p class="category-text" id="categoryText">Para facilitar su búsqueda seleccione una de las categorías disponibles. <a href="#">Categorías</a></p>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-main">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <img src="footer.png" alt="Un portal de: Banco Caja Social">
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="telefono.png" alt="Teléfono">
+                    <div class="contact-text">
+                        <h4>Línea Amiga</h4>
+                        <p>601 542 6446 en Bogotá</p>
+                        <p>01 8000 910038 en otras ciudades</p>
+                        <p>#233 sin costo</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="telefonochiquito.png" alt="Contáctenos">
+                    <div class="contact-text">
+                        <h4>Contáctenos</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="elon.png" alt="Canales Alternos">
+                    <div class="contact-text">
+                        <h4>Canales Alternos</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            Copyright © 2026 Banco Caja Social | Términos y Condiciones | Defensor del consumidor financiero
+        </div>
+    </footer>
+
+    <!-- Script -->
+    <script>
+        // Lista consolidada completa (334 convenios)
+        const nombresConvenios = [
+            "LIBERTY CONVENIOS CARTERA BCS", "LIBERTY CONVENIO POLIZAS ADMINISTRATIVAS BCS", "LIBERTY CONVENIOS RECURSOS HUMANOS FS", "LIBERTY CONVENIO VENTA PRODUCTOS", "CONVENIO RECAUDO FERRINI", "CONVENIO ATEC", "COMFENALCO TOLIMA CONVENIO DE VIVIENDA", "COOPSOCIAL CONVENIOS", "SERVICIOS Y SOLUCIONES CONVENIO BGA SAS", "ABANTA CONVENIOS", "TUKUPO CONVENIOS", "CENTRO COMERCIAL LA CONVENCION", "ECONOMIZADORES.NET SA", "EDIFICIO MALECON LOS MOLINOS", "EDIFICIO SODECON PROPIEDAD HORIZONTAL", "SIDECONT SAS", "ECONORTE DISENOS IMPLEMENTOS Y PRODUCTOS", "GRUPO ECONOMICO PRIME SAS", "ECONOMATO", "ADSECON SAS", "CENTRO DE RECONOCIMIENTO MEDICO DEL TOLIMA SAS", "IPS CUCUTA SAS CENTRO RECONOCIMIENTO CONDUCTORES", "ECONORTE CENTRO ECOGRAFICO DEL NORTE", "FUNDACION RECONSTRUYENDO LAZOS DE PAZ", "EDIFICIO TORRE DE SANTA GEMA PH", "SURAMERICANA DE ARRENDAMIENTOS", "COLEGIO DE MARIA AUXILIADORA MEDELLIN", "UNIDAD RESIDENCIAL GAVIOTAS PH", "URBANIZACION MIRADOR DE LA HACIENDA", "ESC CATO OFC ARQUIDIOCESIS MDE", "EDIFICIO RINCON DE MIRAFLORES", "ARRENDAMIENTOS METROCASAS", "FIANZAS DE COLOMBIA ARRENDAMIENTOS", "ARRENDAMIENTOS Y VENTAS GRUPO INMOBILIARIO SAS", "ARRENDAMIENTOS MONSERRATE LIMITADA", "INVERSIONES Y ARRENDAMIENTOS MUNOZ SAS", "ARRENDAMIENTOS RIONEGOMEZ LTDA", "ARRENDAMIENTOS PROMOBIENES LIMITADA", "ARRENDAMIENTOS PASEO ESPANA", "ARRENDAMIENTOS EL BINOMIO LTDA", "NACIONAL DE ARRENDAMIENTOS SAS", "DIOCESIS DE BUENAVENTURA ARRENDAMIENTOS", "ARRENDAMIENTOS ENVIGADO SAS", "INSTITUCION ZORAIDA ARRENDAMIENTOS", "ARRENDAMIENTOS ALVAREZ Y CIA LTDA", "INMOBILIARIA VISOS SAS ARRENDAMIENTOS", "TERMINAL BOGOTA ARRENDAMIENTO ZONA COMUNES", "ARRENDAMIENTOS OGLIASTRI SAS", "ARRENDAMIENTOS VICASAS", "ARRENDAMIENTOS SANTA MARIA LTDA", "ARRENDAMIENTOS COPIABIENES LTDA",
+            "EDIFICIO TEQUENDAMA PROPIEDAD HORIZONTAL", "EDIFICIO BERMORA PROPIEDAD HORIZONTAL", "EDIFICIO AUTOMAR PH", "EDIFICIO EL CAMINITO PH", "EDIFICIO BILBAO II PH", "EDIFICIO FURATENA PH", "EDIFICIO EL CANDIL PH", "EDIFICIO MEDITERRANEO PH", "EDIFICIO ACUBENS P.H.", "EDIFICIO ONIX PROPIEDAD HORIZONTAL", "EDIFICIO SERRANILLA PH", "EDIFICIO PINARES DE ENGATIVA PROPIEDAD HORIZONTAL", "EDIFICIO 14X98 PROPIEDAD HORIZONTAL", "EDIFICIO ARIES PH", "CENTRO CIENTIFICO INTERNACIONAL DE MEDICINA BIOLOG", "EDIFICIO EL DORADO PH", "EDIFICIO SAN JORGE DE LA CAROLINA", "EDIFICIO ROSALES", "EDIFICIO MARIA CLARA PH", "ASOCIACION LEGION DE MARIA", "ASOCIACION DE INGENIEROS DE LA ETB", "ASOCIACION COL ANEXO SAN FCO DE ASIS", "ASOCIACION CENTRO SOCIAL RINCON MADRE ADMIRABLE", "ASOCIACION AMIGOS DEL NINO - AYUDAME - CLEMENCIA G", "ASOCIACION POPULAR DE VIVIENDA DE INTERES SOCIAL L", "ASOCIACION COMUNITARIA YARUMO BLANCO", "ASOCIACION BIENESTAR INMOBILIARIO BOGOTA", "ASOCIACION HOGAR INFANTIL EL LAGUITO", "ASOCIACION DE COPROPIETARIOS LUNA PARK URE PARK", "ASOCIACION NACIONAL DE GENTE POSITIVA", "ASOCIACION ASO CARIMAGUA ETAPA 8", "ASOCIACION NACIONAL DE TRANSPORTE ASONALTET", "ASOCIACION DE VECINOS EL PALOMAR", "ASOCIACION DE EMPRESARIOS CATOLICOS DE COLOMBIA", "ASOCIACION DE ENDODONCIA DE BOYACA", "ASOCIACION DE RECICLADORES SOL NACIENTE", "ASOCIACION BANDERAS UNIDAS", "ASOCIACION HOGAR INFANTIL EL NIDO", "ASOCIACION DE RECICLADORES HUELLA NATURAL ESP", "ASOCIACION DE MUJERES ACACIRENAS ASMACAS", "ASOCIACION PROPIEDAD HORIZONTAL DE COLOMBIA", "CORP UNIVERSITARIA EMPRESARIAL DE SALAMANCA", "CENTRO EMPRESARIAL MILAN PH", "PROMOCIONES EMPRESARIALES SAS CONV 15024877", "PROMOCIONES EMPRESARIALES OSCORP SAS", "GRUPO EMPRESARIAL TRANSPORTES AVANZA SAS", "INMOBILIARIA MUNOZ EMPRESA UNIPERSONAL", "METROPOLIS CENTRO COMERCIAL Y EMPRESARIAL", "MULTIEMPRESAS", "DURDAN CENTRO EMPRESARIAL PROPIEDAD HORIZONTAL", "EDIFICIO FIOREE PI CENTRO EMPRESARIAL PH", "ASESORIAS EMPRESARIALES SJJ SAS", "EMPRESA AGUAS DE FACATATIVA", "CENTRO EMPRESARIAL SAN ANGEL PH", "INNOVA CENTRO DE DESARROLLO EMPRESARIAL SAS", "GRUPO EMPRESARIAL TU CASA CARTAGENA", "MORO GRUPO EMPRESARIAL Y JURIDICO SAS", "LAL HOLDING EMPRESARIAL SAS", "GRUPO EMPRESARIAL ATLAS AIG SAS", "GRUPO EMPRESARIAL CARIDIX SAS", "MARA INVERSIONES Y SOLUCIONES EMPRESARIALES", "INNOVA SUMINISTROS EMPRESARIALES SAS", "GRUPO EMPRESARIAL TEEN SAS", "EDIFICIO TORRE EMPRESARIAL PH - IBAGUE", "EDIFICIO 9318 CENTRO EMPRESARIAL", "C Y V ASESORIA JURIDICA Y EMPRESARIAL SAS", "CENTRO EMPRESARIAL CAPITAL CENTERII PH", "TUFIBRA GRUPO EMPRESARIAL SAS", "EDIFICIO CENTRO EMPRESARIAL CALLE 98 PH", "FYM GESTION EMPRESARIAL SAS", "FESER FONDO DE EMPLEADOS DE SALUD EN RISARALDA", "SALUDABLES", "AVANT SALUD INTEGRAL SAS", "INSTITUTO DE ENSENANZA EN ARTES Y SALUD IDEAS", "JUAN BAUTISTA SALUD OCUPACIONAL", "FONDO EMPLEADOS AL SERVICIO DE LA SALUD", "CENESTEP SALUD SAS", "CRC SALUD VIDA SAS", "VENCOL SALUD IPS SAS", "AYG SERVICIOS DE SALUD SAS", "SANTO REMEDIO SALUD NATURAL SAS", "PARROQUIA NUESTRA SENORA DE LA SALUD", "BIEN ESTAR SALUD SAS", "SALUD AMBIENTAL LTDA", "GESTIONAR SALUD COLOMBIA", "OSSIN EMPRESA DE SALUD Y TURISMO", "CORPOSALUD", "OD SALUD SAS", "EUSALUD SERVICIOS DE ENFERMERIA", "ANDSALUD IPS SAS", "JV BIENESTAR Y SALUD MENTAL SAS", "KAIROS SALUD SAS", "ALIMENTOS SALUDABLES PARA MASCOTAS SAS", "FARMASALUD J V DISTRIBUIDORA FARMACEUTICA SAS", "VIDA SALUD PRO SAS", "CYR DERECHO LABORAL Y SEGURIDAD Y SALUD EN EL TRAB", "CLIP SALUD SAS", "CORPO SOCIAL E INTEGRAL DEL SER SALUD Y BIENESTAR",
+            "CONJUNTO SIEMPRE VERDE PROPIEDAD HORIZONTAL", "CONJUNTO RESIDENCIAL TORRES DE SAN LUCAS", "CONJUNTO RESIDENCIAL PLAZA CAMPESTRE", "CONJUNTO CIUDADELA CASIQUE NIQUIA M5", "CONJUNTO RESIDENCIAL ELEMENT PROPIEDAD HORIZONTAL", "CONJUNTO RESIDENCIAL LOS CAMPANOS", "CONJUNTO RESIDENCIAL LOS ALMENDROS DE LA 80 P", "CONJUNTO RESIDENCIAL ACUARELA PH", "CONJUNTO RESIDENCIAL ANTURIO II", "CONJUNTO RESIDENCIAL ACAPULCO 2 ETAPA", "CONJUNTO TORRES AMEL II", "CONJUNTO GRAN RESERVA DE POMEROL PH", "CONJUNTO RESIDENCIAL CONDADO DE IBERIA III PH", "CONJUNTO RESIDENCIAL ALMADIA", "CONJUNTO RESIDENCIAL VILLA DEL NORTE I P H", "CONJUNTO RESIDENCIAL LOS CIPRESES PH", "CONJUNTO RESIDENCIAL TORCOROMA", "CONJUNTO RESIDENCIAL LA ESTANCIA V P H", "CONJUNTO RESIDENCIAL RESERVA DE MENDOZA PH", "CONJUNTO RESIDENCIAL ALAMEDA SAN ANTONIO P H", "CONJUNTO RESIDENCIAL SANTA MARIA DE LOS ANGELES", "EDIFICIO CONJUNTO RESIDENCIAL Y COMERCIAL PROCOIL", "CONJUNTO RESIDENCIAL SANTA CLARA", "CONJUNTO RESIDENCIAL PORTAL DE ARRAYANES PH", "CONJUNTO ATICOS DE LA SABANA II ETAPA", "CONJUNTO PROVENZA CAMPESTRE", "CONJUNTO RESIDENCIAL LAS PASARELAS PH", "CONJUNTO RESIDENCIAL ICATA IV", "CONJUNTO RESIDENCIAL PRADO GRANDE", "ESCUELAS POPULARES EUCARISTICAS", "UNIDAD RESIDENCIAL LA PRIMAVERA PH", "CONJUNTO RESIDENCIAL MIRADOR DE LA ALAMEDA P", "CONJUNTO RESIDENCIAL EL CEREZAL DE SAN LUIS", "UNIDAD RESIDENCIAL CASABLANCA 32", "CUMBRES DEL SALITRE III ADMINISTRACION", "MULTIFAMILIARES NARINO", "CONJUNTO RESIDENCIAL PORTAL DE MODELIA 2", "CONJUNTO RESIDENCIAL RESERVA DE ATICOS PH", "CONJUNTO RESIDENCIAL LUGANO III", "CONJUNTO RESIDENCIAL SAN JERONIMO", "CONJUNTO RESIDENCIAL CAPRI ETAPA I P H", "CONJUNTO RESIDENCIAL ARRECIFE", "PROYECTO RESERVA DE SAN RAFAEL", "CONJUNTO DE USO RESIDENCIAL SANTA MARIA DEL S", "CONJUNTO RESIDENCIAL EL SALITRAL", "PROYECTO CONJUNTO RESIDENCIAL SAN RAFAEL", "CONJUNTO PINARES DE CHIA SECTOR PUESTA DEL SOL P H", "CONJ RESID LOS CRSITALES PH", "CONJUNTO RESIDENCIAL BALCONES DE BERNA II PROPIEDA", "CONJUNTO RESIDENCIAL VILLA DEL NORTE III", "CONJ RESIDENCIAL ATALANTA", "EDIFICIO LA CALLEJA RESERVADO-PROPIEDAD HORIZONTAL", "CONJUNTO RESIDENCIAL BALCONES DE MODELIA", "ALIMENTOS MARLUZ SAS", "ASOCIACION DE VIVIENDA DE INTERES SOCIAL VILLALUZ", "PROFESIONALES EN LUZ S.A", "CENTRO EDUCATIVO LA LUZ DEL SABER", "LUZ STELLA MENDEZ ROJAS", "EDIFICIO LUZ ANGELA ADMINISTRACION", "EDIFICIO LUZ ANGELA CUOTA EXTRAORDINARIA", "FUNDACION LUZ DE MORRO", "HOTEL SILOE Y O LUZ MARINA USCATEGUI", "FUNDACION DE LAS TINIEBLAS A LA LUZ", "DALUZ SAS", "EDIFICIO LUZ ALEJANDRA", "CONJUNTO RESIDENCAL JARDIN DE VILLALUZ", "LUZ DARY GIRALDO DUQUE", "FUNDACION LUZ DE VIDA NARIÑO", "COMERCIALIZADORA MAXILUZ LED", "CENTRO ESPIRITA RUTAS DE LUZ", "FUNDACION LUZ DE ESPERANZA IPS", "OPTICA LUZ DE VIDA SAS", "FUNDACION HOGAR TALLER PARA CIEGOS ANGEL DE LUZ", "MAXLUZ DEL CARIBE ENERGIA SOLAR SAS", "HACIENDA LA ESTANCIA ACUEDUCTO", "ACUEDUCTO JUANCHITO CORP VECINOS DE SANTAGUEDA", "SUSCRIPTORES DEL ACUEDUCTO VEREDA PIRGUA TUNJA", "ACUEDUCTO RANCHERIAS", "ACUEDUCTO SANTACRUZ DE BARBAS", "ASOCIACION DE USUARIOS DEL ACUEDUCTO LEONARDO", "ASOC DE U ACUEDUCTO DE COBIA BAJA", "ACUEDUCTO AGUA PURA", "JUNTA ADMINISTRADORA DEL ACUEDUCTO PEDREGAL", "ACUEDUCTO DE NESCUATA", "ACUEDUCTO LA JAGUA", "ACUEDUCTO PEDRO VARGAS SUBIA ORIEN", "ACUEDUCTO FIVESAMON", "ACUEDUCTO LAS MERCEDES DEL MUNICIPIO DE MARINILLA", "ASOCIACION COMUNITARIA DEL ACUEDUCTO ACURI", "ASOCIACION DE USUARIOS DEL ACUEDUCTO DEL AGUILA", "ACUEDUCTO CRISTO REY DE COPACABANA", "ACUEDUCTO REGIONAL LAS TRES P", "ASOC ACUEDUCTO LA PRIMAVERA", "ACUEDUCTO JOSE ANTONIO CORREA ESP", "ACUEDUCTO EL REGAZO", "ACUEDUCTO LA CABANA", "ACUEDUCTO Y ALCANTARILL VDA PALOBLANCO BAJO CURITI", "CORPORACION DE ACUEDUCTO SADEP", "JUNTA ADM ACUEDUCTO Y ALCANTARILLADO B.VILLANUEVA", "PAGOS ACUEDUCTO Y ALCANTARILLADO B VILLANUEVA", "ACUEDUCTO MULTIVEREDAL LA ACUARELA", "ACUEDUCTO TOBALES", "EXTRA ESPACIO BODEGAS PERSONALES SAS", "INSTALACIONES HIDROSANITARIAS Y DE GAS RAMOS EU", "EDIFICIO LAS VEGAS - PROPIEDAD HORIZONTAL", "JORGE EZEQUIEL GALLARDO VARGAS", "BLANCA INES BAUTISTA VARGAS", "INVERSIONES VARGAS & GARCIA SAS", "CONJUNTO RESIDENCIAL EL REMANSO FUSAGASUGA", "HACHEM GASTRONOMY SAS", "SERVIPLAGAS SAS", "DEYANIRA RIOS VARGAS", "SISTEMA PARA GAS NATURAL VEHICULAR GASOIL LTDA", "PAGO GASTOS ESCRITURACION AR CONSTRUCCIONES SAS", "VEGAS SEGURITY SAS", "SERVICIO INTEGRAL DE GASES", "PROYECTO AMARO - ALCABAMA - GASTOS ESCRITURACION", "PROYECTO ORION GASTOS ESCRITURACION", "PROYECTO IRIS - ALCABAMA - GASTOS ESCRITURACION", "PROYECTO BLUE - ALCABAMA - GASTOS ESCRITURACION", "EDIFICIO VARGAS ALBA PROPIEDAD HORIZONTAL", "ADMON URBANIZACION LAS MANGAS II MANZANA 12", "EXTRAORDINARIAS LAS MANGAS II MANZANA 12", "TECMERGAS SAS", "CERTIFICADO DE ESTUDIO IME ESCUELAS TECNICAS", "ESCUELA DE FORMACION MUSICAL LIMITADA", "ESCUELA LIVING SAS", "FUNDACION ESCUELA DE BARBERIA CLASICA", "ASOCIACION TALENTOS ESCUELA DE ARTE", "ESCUELA EMPRESARIAL DE LIDERAZGO SAS", "ESCUELA DE MUSICA OM", "UNIVERSAL DE RACORES Y PERFILES LTDA", "FUNDACION UNIVERSITARIA MONSERRATE UNIMONSERRATE", "CORHUILA - CORP UNIVERSITARIA DEL HUILA", "CORPORACION UNIVERSITARIA DE COLOMBIA IDEAS", "UNIVERSIDAD DE LOS LLANOS", "ENLACE LATINOAMERICANO DE UNIVERSIDADES SAS", "INVERSIONES ENFINCA RAIZ LA UNIVERSAL SAS", "INST UNIVERSAL SALAZAR",             "UNIVERSAL DE REPUESTOS SAS", "ASOCIACION DE RECICLADORES UNIVERSO AMBIENTAL", "UNIVERSO WELU SAS", "COOPERATIVA DE LA UNIVERSIDAD DISTRITAL FJC", "EDIFICIO UNIVERSAL PROPIEDAD HORIZONTAL", "IDITEK FUNDACION UNIVERSITARIA PARA LA INVESTIGACI", "PARROQUIA UNIVERSITARIA DE PENTECOSTES", "PANALERA UNIVERSAL", "POLITECNICO UNIVERSITARIO UNIANDINO SAS", "CORPORACION NACIONAL DE SERVICIOS GENERALES", "FIBERTEX CORPORATION", "CORPORACION AGRUPACION SOCIAL CIUDAD VERDE", "IVAN PADILLA DENTAL CORPORATION SAS", "CORPORACION EL MINUTO DE DIOS DONACIONES", "CORPORACION COLEGIO TRININARIO", "CORPORACION YOMA", "GOLDEN BRIDGE CORP SAS REFERENCIA 70140", "GOLDEN BRIDGE CORP SAS TARJETAS 70139", "CORPORACION LA ENEA", "COACHING CORP GROUP COLOMBIA SAS", "CORPORACION ESCUELA PEDAGOGICA EXPERIMENTAL-EPE", "COLOMBIA SOCIAL IMPACT CORPORATION", "CORPORACION ARCORES COLOMBIA", "CORPORACION CLUB DE TENIS CALI", "MS SUMINISTROS CORPORATIVOS SAS", "CORPORACION HUMANICEMOS DH", "GSV LAW CORPORATION SAS", "CORPORACION MIMBRE LEGADO PARA LA PAZ", "CONJ RES SALITRAL II CUOTA EXT", "LA PRADERA CLUB RESIDENCIAL PH", "AS. COLOMBIANA DE PROFESORES DE INGLES- ASOCOPI", "INDUSTRIA DE RESINAS SAS", "ASOPADRES DE FAM COL LOURDES", "CONJUNTO RESIDENCIAL PALMERAS DE CHIQUINQUIRA", "CONJUNTO RESIDENCIAL BAHIA COUNTRY PH", "CONJ RESIDENCIAL PARQUES DE SAN NICOLAS", "CONJUNTO RESIDENCIAL RESERVA DE GRATAMIRA P H", "COLEGIO TERESIANO DE ENVIGADO CSTJ", "COOP DE TRANSPORTADORES DE BELEN-COOTRABEL", "UNIDAD RESIDENCIAL MARCO FIDEL SUAREZ P H", "CONJUNTO RESIDENCIAL MIRADOR DE SAN BASILIO", "25849 ENVIGADO HNAS DOMINICAS DE LA PRESENTACION", "ESCUELA NORMAL SUPERIOR ANTIO", "ESTIMULEMOS ESCUELA MATERNAL SAS", "ESCUELA NORMAL MARIA AUXILIADORA - SOACHA", "FUNDACION ESCUELA DE ARTES MME", "ESCUELA TALLER SOPHIA", "ESCUELA HOGAR SAN PEDRO CLAVER", "ESCUELA DE SALUD SAN PEDRO CLAVER SAN ANTONIO", "ESCUELA DE BAILE SEMBRANDO ESTRELLAS", "ESCUELA DE FUTBOL CHELSEA BUGA", "FUNDACION ESCUELA DE BAILE ACROSALSA LATINA", "ESCUELA NORMAL PAZ", "SELLA ACADEMY ESCUELA DE NEGOCIOS SAS", "ESCUELA VIVA", "TECNAS", "POLITECNICO INTEGRAL COLOMBIANO S.A.S.", "ORGANISMO DE INSPECCIONES TECNICAS DE COLOMBIA SAS", "CONSORCIO TECHO II CIPRES DE CASTILLA", "CONSORCIO TECHO II ARALIA DE CASTILLA", "CONSORCIO TECHO II", "ISOMEDIX TECHNOLOGY SAS", "TECNILIMPIO S.A", "INSTITUTO TECNICO EDUCATIVO AMERICANO", "FUNDACION CENTRO DE ESTUDIOS TECNOLOGICOS Y D", "CORP TECNOLOGICA DE EDU SUPERIOR SAPIENZA CTE", "BE MOBILE TECHNOLOGY SAS", "POTENCIA Y TECNOLOGIAS INC SA", "COLMENA SEGUROS PROTECC CRECIENTE", "CARVAJAL TECNOLOGIA Y SERVICIOS", "INSTITUTO TECNICO EDUWORK SAS", "CLUB DEPORTIVO POLITECNICO AGS", "EDIFICIO MONTECARLO PLAZA", "IDONTEC", "BACHILLERATO TECNICO COMERCIAL SANTA ANA EU", "AGUA TECNICOS COLOMBIA SAS", "DISLUBTEC SAS", "PLASTECNO SAS", "VTM VALORES TECNOLOGIA Y MERCADO SAS", "ELECTROTECNICOS R C P LIMITADA", "FLUJOTEC SAS", "DOBLADORA CORTEC SAS", "FINTECH BANVI", "INSTITUTO TECNOLOGICO DE OCCIDENTE MOSQUERA", "INSTITUTO VICARIAL JESUS MAESTRO", "INSTITUTO PARROQUIAL JESUS DE LA BUENA ESPERANZA", "INSTITUTO CRISTO REY", "INSTITUTO DE INTEGRACION CULTURAL SAS", "INSTITUTO TECNOLOGICO DEL SUR", "INSTITUTO SAN IGNACIO DE LOYOLA", "INSTITUTO NUEVO MUNDO", "INSTITUTO DE FORMACION LABORAL PARA EL BIENESTAR", "ASYS INSTITUTO DE EDUCACION PARA EL TRABAJO Y EL D", "INSTITUTO LINGUISTICO WILLIAM SHAKESPEARE SOLEDAD", "COOPERATIVA DE INSTITUTORES DE CALDAS CIDECAL", "INSTITUTO DE EDUCACION TECNICA EDUCATECN SAS", "INSTITUTO PSICOPEDAGOGICO ALEJANDRIA", "INSTITUTO ADVENTISTA DE CUCUTA INAC", "INCOBIDA INSTITUTO", "INSTITUTO SALESIANO SAN JOSE", "INSTITUTO NUESTRA SENORA DEL CARMEN", "INSTITUTO TOBIAS EMANUEL", "CASA INSTITUTO NACIONAL DE OFTALMOLOGIA INO PH", "INSTITUTO MARIO LUIS RODRIGUEZ COBOS"
+        ];
+
+        // Variables del DOM
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+        const clearBtn = document.getElementById('clearBtn');
+        const noResultContainer = document.getElementById('noResultContainer');
+        const showExtraInput = document.getElementById('showExtraInput');
+        const extraInputWrapper = document.getElementById('extraInputWrapper');
+        const manualInput = document.getElementById('manualInput');
+        
+        const resultsSection = document.getElementById('resultsSection');
+        const selectedNameText = document.getElementById('selectedNameText');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const cancelSelection = document.getElementById('cancelSelection');
+        const searchBtn = document.getElementById('searchBtn');
+
+        // Función para normalizar texto (quita tildes, diéresis, mayúsculas y espacios extra)
+        function normalizarTexto(texto) {
+            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        }
+
+        // Función para asignar categoría automáticamente según palabras clave
+        function obtenerCategoria(nombre) {
+            const nombreUpper = nombre.toUpperCase();
+            
+            if (nombreUpper.includes("ACUEDUCTO") || nombreUpper.includes("ALCANTARILLADO")) return "ACUEDUCTOS Y ALCANTARILLADOS";
+            if (nombreUpper.includes("SALUD") || nombreUpper.includes("MEDICO") || nombreUpper.includes("IPS") || nombreUpper.includes("ENFERMERIA") || nombreUpper.includes("ODONTOLOGIA")) return "SALUD";
+            if (nombreUpper.includes("ARRENDAMIENTO") || nombreUpper.includes("INMOBILIARIA") || nombreUpper.includes("FIANZAS")) return "ARRENDAMIENTOS E INMOBILIARIAS";
+            if (nombreUpper.includes("UNIVERSIDAD") || nombreUpper.includes("INSTITUTO") || nombreUpper.includes("ESCUELA") || nombreUpper.includes("COLEGIO") || nombreUpper.includes("EDUCATIVO") || nombreUpper.includes("CORP UNIVERSITARIA")) return "EDUCACIÓN";
+            if (nombreUpper.includes("ASOCIACION") || nombreUpper.includes("FUNDACION") || nombreUpper.includes("CORPORACION") || nombreUpper.includes("PARROQUIA") || nombreUpper.includes("IGLESIA")) return "ENTIDADES SIN ÁNIMO DE LUCRO";
+            if (nombreUpper.includes("EDIFICIO") || nombreUpper.includes("CONJUNTO") || nombreUpper.includes("UNIDAD RESIDENCIAL") || nombreUpper.includes("URBANIZACION") || nombreUpper.includes("CONJ RESID")) return "CONJUNTOS RESIDENCIALES";
+            if (nombreUpper.includes("EMPRESA") || nombreUpper.includes("EMPRESARIAL") || nombreUpper.includes("SAS") || nombreUpper.includes("LTDA") || nombreUpper.includes("CONVENIO")) return "EMPRESAS Y CONVENIOS";
+            if (nombreUpper.includes("GAS") || nombreUpper.includes("ENERGIA") || nombreUpper.includes("LUZ")) return "SERVICIOS PÚBLICOS";
+            
+            return "OTROS";
+        }
+
+        // Función para procesar la búsqueda exacta (al presionar Lupa o Enter)
+        function procesarBusqueda(textoBusqueda) {
+            const val = normalizarTexto(textoBusqueda);
+            if (!val) return;
+
+            const coincidencia = nombresConvenios.find(nombre => 
+                normalizarTexto(nombre) === val
+            );
+
+            if (coincidencia) {
+                mostrarTablaResultado(coincidencia);
+            } else {
+                const filtered = nombresConvenios.filter(nombre => 
+                    normalizarTexto(nombre).includes(val)
+                );
+
+                if (filtered.length === 1) {
+                    mostrarTablaResultado(filtered[0]);
+                } else if (filtered.length > 1) {
+                    autocompleteList.innerHTML = '';
+                    autocompleteList.style.display = 'block';
+                    filtered.forEach(nombre => {
+                        const div = document.createElement('div');
+                        div.textContent = nombre;
+                        div.addEventListener('click', function() {
+                            searchInput.value = this.textContent;
+                            autocompleteList.style.display = 'none';
+                            mostrarTablaResultado(this.textContent);
+                        });
+                        autocompleteList.appendChild(div);
+                    });
+                } else {
+                    autocompleteList.style.display = 'none';
+                    noResultContainer.style.display = 'block';
+                    resultsSection.style.display = 'none'; 
+                }
+            }
+        }
+
+        // Lógica de búsqueda en tiempo real (mientras escribes)
+        searchInput.addEventListener('input', function() {
+            const val = normalizarTexto(this.value);
+            autocompleteList.innerHTML = '';
+            noResultContainer.style.display = 'none';
+            extraInputWrapper.style.display = 'none';
+
+            if (this.value.length > 0) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            const filtered = nombresConvenios.filter(nombre => 
+                normalizarTexto(nombre).includes(val)
+            );
+
+            if (filtered.length > 0) {
+                autocompleteList.style.display = 'block';
+                filtered.forEach(nombre => {
+                    const div = document.createElement('div');
+                    div.textContent = nombre;
+                    div.addEventListener('click', function() {
+                        searchInput.value = this.textContent;
+                        autocompleteList.style.display = 'none';
+                        mostrarTablaResultado(this.textContent);
+                    });
+                    autocompleteList.appendChild(div);
+                });
+            } else {
+                autocompleteList.style.display = 'none';
+                noResultContainer.style.display = 'block'; 
+            }
+        });
+
+        // Eventos para forzar la búsqueda (Lupa y Enter)
+        searchBtn.addEventListener('click', function() {
+            procesarBusqueda(searchInput.value);
+        });
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                procesarBusqueda(this.value);
+            }
+        });
+
+        // Función para mostrar la tabla
+        function mostrarTablaResultado(nombreConvenio) {
+            noResultContainer.style.display = 'none';
+            autocompleteList.style.display = 'none';
+            
+            resultsSection.style.display = 'block';
+            selectedNameText.textContent = nombreConvenio;
+
+            const categoria = obtenerCategoria(nombreConvenio);
+
+            // Se codifica el nombre en la URL para pasarlo a aporte.html
+            const urlAporte = `aporte.html?convenio=${encodeURIComponent(nombreConvenio)}`;
+
+            resultsTableBody.innerHTML = `
+                <tr>
+                    <td data-label="Nombre del convenio">${nombreConvenio}</td>
+                    <td data-label="Categoría">${categoria}</td>
+                    <td data-label="Acción" style="text-align: center;">
+                        <a href="${urlAporte}" class="pay-btn">Pagar</a>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Botón de cancelar búsqueda
+        cancelSelection.addEventListener('click', function(e) {
+            e.preventDefault();
+            resultsSection.style.display = 'none';
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            noResultContainer.style.display = 'none';
+            searchInput.focus();
+        });
+
+        // Botón para limpiar la "X"
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            autocompleteList.style.display = 'none';
+            this.style.display = 'none';
+            noResultContainer.style.display = 'none';
+            extraInputWrapper.style.display = 'none';
+            manualInput.value = '';
+            resultsSection.style.display = 'none'; 
+            searchInput.focus();
+        });
+
+        // Cerrar lista al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (e.target !== searchInput && e.target !== autocompleteList && !autocompleteList.contains(e.target) && e.target !== searchBtn && !searchBtn.contains(e.target)) {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        // Lógica para el enlace "Ingresa aquí"
+        showExtraInput.addEventListener('click', function(e) {
+            e.preventDefault(); 
+            extraInputWrapper.style.display = 'block';
+            manualInput.focus();
+            this.style.display = 'none'; 
+        });
+
+    </script>
+</body>
+</html>

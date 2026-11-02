@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiPagoAmigo - Realizar Pago</title>
+    <style>
+        /* Reset y Estilos Generales */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background-color: #0066b3;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo-container img {
+            height: 45px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            align-items: center;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-left: 20px;
+            align-items: center;
+        }
+
+        .social-icons img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            display: block;
+        }
+
+        /* Contenido Principal */
+        .main-content {
+            background-color: #ffffff;
+            padding: 40px 8%;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .content-title {
+            color: #0066b3;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .convenio-title {
+            color: #555;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Tabla de Datos */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+
+        .info-table thead {
+            background-color: #0066b3;
+            color: white;
+        }
+
+        .info-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .info-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Formulario */
+        .form-note {
+            text-align: right;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group.full-width {
+            flex: 0 0 100%;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #d32f2f;
+        }
+
+        /* Icono SVG en lugar de Emoji */
+        .info-icon {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            fill: #0066b3;
+            margin-left: 5px;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #0066b3;
+        }
+
+        /* Botones de Acción */
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel {
+            background-color: #888;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #666;
+        }
+
+        .btn-continue {
+            background-color: #d32f2f;
+            color: white;
+        }
+
+        .btn-continue:hover {
+            background-color: #b71c1c;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0066b3;
+            color: white;
+            padding: 30px 8% 10px 8%;
+            margin-top: 40px;
+        }
+
+        .footer-main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo img {
+            max-width: 220px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .contact-item img {
+            width: 35px;
+            height: 35px;
+            margin-right: 15px;
+            object-fit: contain;
+        }
+
+        .contact-text h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .contact-text p {
+            font-size: 0.85rem;
+            line-height: 1.3;
+            margin-bottom: 2px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            padding-top: 10px;
+        }
+
+        /* RESPONSIVE DESIGN (Celular) */
+        @media (max-width: 768px) {
+            header { padding: 0 15px; }
+            .nav-links { display: none; }
+            .main-content { padding: 20px 5%; }
+            
+            .info-table thead { display: none; }
+            .info-table tr { 
+                display: block; 
+                border: 1px solid #ddd; 
+                border-radius: 5px;
+                margin-bottom: 15px;
+                padding: 15px;
+                background-color: #fff;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .info-table td { 
+                display: block; 
+                text-align: left; 
+                padding: 5px 0; 
+                border-bottom: none;
+            }
+            .info-table td::before { 
+                content: attr(data-label); 
+                display: block;
+                font-weight: bold; 
+                color: #333;
+                margin-bottom: 3px;
+                font-size: 15px;
+            }
+            
+            .form-row { flex-direction: column; gap: 15px; }
+            .form-note { text-align: left; margin-bottom: 15px; }
+            .action-buttons { flex-direction: column-reverse; }
+            .btn { width: 100%; }
+            
+            .footer-main { flex-direction: column; }
+            .footer-col { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <img src="mipagoamigo.png" alt="MiPagoAmigo">
+        </div>
+        <div class="nav-links">
+            <span>¿QUÉ ES MIPAGOAMIGO?</span>
+            <span>PREGUNTAS FRECUENTES</span>
+            <div class="social-icons">
+                <img src="facebook.png" alt="Facebook">
+                <img src="x.png" alt="X">
+                <img src="youtube.png" alt="YouTube">
+            </div>
+            <span>SÍGUENOS</span>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <h2 class="content-title">Pago de recibos y facturas</h2>
+        <!-- Aquí se inyecta el nombre dinámicamente -->
+        <h3 class="convenio-title" id="tituloConvenio">Cargando...</h3>
+
+        <!-- Tabla de información del convenio -->
+        <table class="info-table">
+            <thead>
+                <tr>
+                    <th>Nombre del convenio</th>
+                    <th>NIT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <!-- Aquí también se inyecta el nombre -->
+                    <td data-label="Nombre del convenio" id="nombreConvenioTabla">Cargando...</td>
+                    <td data-label="NIT">8909395785</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Formulario -->
+        <div class="form-note">Los datos marcados con un asterisco (*) son requeridos</div>
+
+        <form id="paymentForm" action="medios.html" method="GET">
+            
+            <!-- INPUT OCULTO: Guarda el nombre del convenio para enviarlo a medios.html -->
+            <input type="hidden" name="convenio" id="hiddenConvenio">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Número de referencia / ID / Identificador <span class="required">*</span> 
+                        <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </label>
+                    <input type="text" name="referencia" class="form-input" placeholder="Ingrese la referencia" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        Confirmar Número de referencia / ID / Identificador <span class="required">*</span> 
+                        <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </label>
+                    <input type="text" name="referencia_confirmada" class="form-input" placeholder="Ingrese la referencia" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Valor a pagar <span class="required">*</span> 
+                        <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    </label>
+                    <input type="text" name="valor" class="form-input" id="valorPagar" placeholder="0,00" value="0,00" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label class="form-label">Descripción (opcional, máximo 100 caracteres)</label>
+                    <input type="text" name="descripcion" class="form-input" placeholder="Ingrese la descripción" maxlength="100">
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancelar</button>
+                <button type="submit" class="btn btn-continue">Continuar</button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-main">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <img src="footer.png" alt="Un portal de: Banco Caja Social">
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="telefono.png" alt="Teléfono">
+                    <div class="contact-text">
+                        <h4>Línea Amiga</h4>
+                        <p>601 542 6446 en Bogotá</p>
+                        <p>01 8000 910038 en otras ciudades</p>
+                        <p>#233 sin costo</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="telefonochiquito.png" alt="Contáctenos">
+                    <div class="contact-text">
+                        <h4>Contáctenos</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-col">
+                <div class="contact-item">
+                    <img src="elon.png" alt="Canales Alternos">
+                    <div class="contact-text">
+                        <h4>Canales Alternos</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            Copyright © 2026 Banco Caja Social | Términos y Condiciones | Defensor del consumidor financiero
+        </div>
+    </footer>
+
+    <script>
+        // 1. LÓGICA PARA LEER EL CONVENIO DE LA URL Y MOSTRARLO
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const convenioSeleccionado = urlParams.get('convenio');
+
+            if (convenioSeleccionado) {
+                // Reemplaza el texto "Cargando..." por el nombre real
+                document.getElementById('tituloConvenio').textContent = convenioSeleccionado;
+                document.getElementById('nombreConvenioTabla').textContent = convenioSeleccionado;
+                // Guarda el nombre en el input oculto para pasarlo a medios.html
+                document.getElementById('hiddenConvenio').value = convenioSeleccionado;
+            } else {
+                // Si entran directo a aporte.html sin pasar por el buscador
+                document.getElementById('tituloConvenio').textContent = "UNIDAD RESIDENCIAL GAVIOTAS PH";
+                document.getElementById('nombreConvenioTabla').textContent = "UNIDAD RESIDENCIAL GAVIOTAS PH";
+                document.getElementById('hiddenConvenio').value = "UNIDAD RESIDENCIAL GAVIOTAS PH";
+            }
+        });
+
+        // 2. LÓGICA PARA FORMATEAR EL VALOR CON PUNTOS Y COMAS
+        const valorInput = document.getElementById('valorPagar');
+
+        valorInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^0-9,]/g, '');
+            let parts = value.split(',');
+            if (parts.length > 2) {
+                value = parts[0] + ',' + parts.slice(1).join('');
+            }
+            let integerPart = parts[0];
+            let decimalPart = parts.length > 1 ? parts[1] : '';
+
+            if (integerPart !== '') {
+                integerPart = parseInt(integerPart, 10).toLocaleString('es-CO');
+            }
+
+            if (value.includes(',')) {
+                this.value = integerPart + ',' + decimalPart.substring(0, 2);
+            } else {
+                this.value = integerPart;
+            }
+        });
+
+        // 3. VALIDACIÓN AL ENVIAR A MEDIOS.HTML
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            if (valorInput.value === '0,00' || valorInput.value === '') {
+                e.preventDefault(); 
+                alert('Por favor, ingrese un valor a pagar mayor a 0,00');
+                valorInput.focus();
+            }
+            // Si todo está bien, el formulario se envía a medios.html
+        });
+    </script>
+</body>
+</html>
