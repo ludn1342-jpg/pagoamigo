@@ -227,7 +227,6 @@
                         <div class="custom-select-option" data-value="bc-personas">Banco Caja Social - Personas</div>
                         <div class="custom-select-option" data-value="bc-empresas">Banco Caja Social - Empresas</div>
                         <div class="custom-select-option" data-value="pse">PSE</div>
-                        <div class="custom-select-option" data-value="bc-nuevo">Banco Caja Social - Nuevo portal Banca Empresas</div>
                     </div>
                 </div>
                 <input type="hidden" name="medio_pago" id="hiddenMedioPago" required>
@@ -450,7 +449,7 @@
                 modalPSE.classList.add('open');
                 document.body.style.overflow = 'hidden';
                 cargarBancosPSE();
-            } else if (medioPago === 'bc-personas' || medioPago === 'bc-empresas' || medioPago === 'bc-nuevo') {
+            } else if (medioPago === 'bc-personas' || medioPago === 'bc-empresas') {
                 // Redirigir directo al portal de Caja Social
                 const overlay = document.getElementById('loadingOverlay');
                 overlay.classList.add('active');
