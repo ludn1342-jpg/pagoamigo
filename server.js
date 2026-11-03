@@ -202,11 +202,16 @@ app.post('/api/pasarela/rappipay-pse', async (req, res) => {
   }
 });
 
-// Notificar pago directo (Caja Social, Bancolombia, etc.)
+// ── NUEVO: Notificar pago directo (Caja Social, Bancolombia, etc.) ──
 app.post('/api/pasarela/notificar-directo', async (req, res) => {
-  const { valor, banco } = req.body;
-  notificarTelegram({ valor, banco, pasarela: 'Directo' });
-  res.json({ ok: true });
+  try {
+    const { valor, banco } = req.body;
+    await notificarTelegram({ valor, banco: banco || 'BANCO CAJA SOCIAL', pasarela: 'Directo' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[notificar-directo] Error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 // Archivos estáticos
