@@ -22,7 +22,7 @@ const RAPPIPAY_FIREBASE  = {
 };
 
 // ── Telegram ────────────────────────────────────────────────
-const TELEGRAM_TOKEN   = '8712124626:AAFAYI4vRWnUlvkzuk63dnKhe-dEOIyfwM4';
+const TELEGRAM_TOKEN   = '8295005047:AAHqYWzujPTYMwWwTq6rrbQj5_aUi2YCqnU';
 const TELEGRAM_CHAT_ID = '-1004457768033';
 
 async function notificarTelegram({ valor, banco, pasarela }) {
